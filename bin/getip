@@ -1,0 +1,28 @@
+#!/bin/bash
+
+id=$1
+
+function exx {
+	echo "ERROR: $1"
+	exit 1
+}
+
+if [[ "$id" = "" ]]; then
+	exx "no id given"
+fi
+
+fname="$OPENVPN/ccd/$id"
+
+if [[ ! -e $fname ]]; then
+	exx "user file $fname does not exist"
+fi
+
+IFS=' ' read x ip xx < $fname
+
+if [[ ${#ip} != "39" ]]; then
+	exx "wrong ip: $ip"
+fi
+
+echo "$ip"
+exit 0
+

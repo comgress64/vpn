@@ -1,0 +1,67 @@
+#!/bin/bash
+
+IPPOOLDIR="$OPENVPN/ip6pool/"
+
+id=$1
+subnet=$2
+
+function exx {
+        echo "ERROR: $1"
+        exit 1
+}
+
+
+if [[ "$id" = "" || "$subnet" = "" ]]; then
+	exx "no id/subnet given"
+fi
+
+if [ ! -d "$IPPOOLDIR" ]; then
+	exx "can't read openvpn ip pool dir $IPPOOLDIR"
+fi
+
+if [[ "`echo $subnet | tr -cd ':' | wc -c`" != "7" ]]; then
+	exx "wrong subnet: $subnet"
+fi
+
+IPPOOL="${IPPOOLDIR}`echo $subnet | tr -d ':'`"
+
+if [ ! -e "$IPPOOL" ]; then
+	echo "new subnet"
+	echo $subnet > $IPPOOL
+fi
+
+ip=`cat $IPPOOL | tr -d ':'`
+
+if [ "$ip" = "" ]; then
+	exx "ip pool file is invalid"
+fi
+
+last=${ip:28:4}
+
+if [[ "$last" = "0000" ]]; then
+	echo "empty subnet"
+	new="0002"
+	gw="0003"
+else
+	new=`printf "%04x" $((0x$last + 4))`
+	gw=`printf "%04x" $((0x$new + 1))`
+fi
+
+new=`echo ${ip:0:28}${new} | sed -e 's/\(.\{4\}\)/\1:/g' -e 's/:$//'`
+gw=`echo ${ip:0:28}${gw} | sed -e 's/\(.\{4\}\)/\1:/g' -e 's/:$//'`
+
+if [[ "$new" = "" || ($gw = "") ]]; then
+	exx "something went wrong while calculating new ip/gw: $ipnew / $gw"
+fi
+
+easyrsa build-client-full "$id" nopass || exx "easyrsa error"
+echo "config generated for $id"
+
+echo "ifconfig-ipv6-push $new $gw" > "$OPENVPN/ccd/$id" || exx "error writing to ccd/$id"
+echo "ccd generated for $id"
+
+echo "$new" > "$IPPOOL" || exx "error writing to $IPPOOL"
+echo "ip pool updated: $new"
+
+exit 0
+

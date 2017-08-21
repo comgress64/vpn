@@ -1,0 +1,31 @@
+#!/bin/bash
+
+cdir="$(dirname "$0")"
+. $cdir/lib
+
+id=$1
+
+if [ ! -d "$OPENVPN/ccd" ]; then
+	exx "no client config dir"
+fi
+
+if [ "$id" = "" ]; then
+	exx "please specify user"
+fi
+
+if [ ! -e "$OPENVPN/ccd/$id" ]; then
+	exx "user not found"
+fi
+
+mv "$OPENVPN/ccd/$id" "$OPENVPN/ccd/$id.suspended" || exx "suspend failed"
+touch "$OPENVPN/clients/suspended/$id" || exx "suspend failed"
+
+telnet localhost 7505 <<EOF
+kill $id
+exit
+
+EOF
+
+echo "OK: suspended user $1"
+exit 0
+

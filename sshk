@@ -1,0 +1,7 @@
+#!/bin/bash
+mkdir sshd
+for i in dsa ecdsa ed25519 rsa; do
+	ssh-keygen -t $i -f sshd/ssh_host_${i}_key -q -N ""
+done
+
+ssh-keygen -t rsa -f apikey -q -N ""

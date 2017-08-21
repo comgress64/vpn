@@ -1,0 +1,30 @@
+#!/bin/bash
+
+function exx {
+	echo "ERROR: $1"
+	exit 1
+}
+
+id=$1
+if [ "$id" == "" ]; then
+	exx "no client id given"
+fi
+
+cd $OPENVPN || exx "no openvpn data dir"
+
+if [ ! -d "clients" ]; then
+	mkdir clients || exx "can't create client config dir"
+fi
+
+if [ ! -d "clients/suspended" ]; then
+	mkdir clients/suspended || exx "can't create suspended dir"
+fi
+
+cd clients || exx "client config dir is wrong"
+
+ovpn_getclient "$1" > "./$1.ovpn" || exx "can't save config"
+
+echo "config saved successfully"
+
+exit 0
+

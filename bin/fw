@@ -1,0 +1,69 @@
+#!/bin/bash
+
+cdir="$(dirname "$0")"
+. $cdir/lib
+
+shopt -s nocasematch
+
+id=$1
+op=$2
+dst=$3
+ports=$4
+
+if [[ "$id" == "" || "$op" == "" || $dst == "" ]]; then
+	exx "wrong parameters. should be ./fw <uid> <operation> <group> [comma separated ports]"
+fi
+
+add=""
+
+case $op in
+	add)
+		ip=`$cdir/getip "$id"` || exx "ip getting error error: $ip"
+		add="1"
+		;;
+	remove)
+		ip=`$cdir/getip "$id"` || exx "ip getting error error: $ip"
+		;;
+	gadd)
+		if [[ ! "$id" =~ ^([0-9a-f]{4}:){7}[0-9a-f]{4}(/[0-9]{1,3})?$ ]]; then
+			exx "wrong group address $ip"
+		fi
+		ip=$id
+		add="1"
+		;;
+	gremove)
+		if [[ ! "$id" =~ ^([0-9a-f]{4}:){7}[0-9a-f]{4}(/[0-9]{1,3})?$ ]]; then
+			exx "wrong group address $id"
+		fi
+		ip=$id
+		;;
+	*)
+		exx "unknown operation $op"
+		;;
+esac
+
+if [[ ! "$dst" =~ ^(([0-9a-f]{4}:){7}[0-9a-f]{4}(/[0-9]{1,3})?,?)+$ ]]; then
+	exx "wrong destination address $dst"
+fi
+
+if [[ ! "$ports" == "" ]]; then
+	ports=" -p tcp -m multiport --destination-ports $ports "
+fi
+
+a=`ip6tables -D FORWARD -i tun0 -s $ip -d $dst $ports -j ACCEPT 2>&1`
+if [[ $? = "1" ]]; then
+	if [[ ! "$a" =~ exist ]]; then
+		exx "delete error: $a"
+	fi
+fi
+
+if [[ "$add" != "" ]]; then
+	ip6tables -I FORWARD 1 -i tun0 -s $ip -d $dst $ports -j ACCEPT || exx "chain add failed: ip6tables -I FORWARD 1 -i tun0 -s $ip -d $dst $ports -j ACCEPT"
+fi
+
+touch "$OPENVPN/rules6"
+flock "$OPENVPN/rules6" ip6tables-save > "$OPENVPN/rules6" || exx "rules save failed"
+
+
+exitok "rules processed"
+

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+cdir="$(dirname "$0")"
+. $cdir/lib
+
+id=$1
+
+if [ ! -d "$OPENVPN/ccd" ]; then
+	exx "no client config dir"
+fi
+
+if [ "$id" = "" ]; then
+	exx "please specify user"
+fi
+
+if [ ! -e "$OPENVPN/ccd/$id.suspended" ]; then
+	exx "user not found or not suspended"
+fi
+
+mv "$OPENVPN/ccd/$id.suspended" "$OPENVPN/ccd/$id" || exx "un-suspend failed"
+rm "$OPENVPN/clients/suspended/$id"
+
+echo "OK: un-suspended user $1"
+exit 0
+

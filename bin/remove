@@ -1,0 +1,35 @@
+#!/bin/bash
+
+cdir="$(dirname "$0")"
+. $cdir/lib
+
+id=$1
+
+if [ "$id" = "" ]; then
+	exx "please specify user"
+fi
+
+if [ ! -e "$OPENVPN/pki/private/${id}.key" ]; then
+	exx "user not found"
+fi
+
+echo "yes" | easyrsa revoke "$id" || exx "cert revoke failed"
+
+rm "$OPENVPN/pki/private/${id}.key" || exx "remove failed (key)"
+rm "$OPENVPN/pki/issued/${id}.crt" || exx "remove failed (crt)"
+rm "$OPENVPN/pki/reqs/${id}.req" || exx "remove failed (req)"
+rm "$OPENVPN/clients/${id}.ovpn" || exx "remove failed (ovpn)"
+
+rm "$OPENVPN/clients/suspended/${id}"
+rm "$OPENVPN/ccd/${id}.suspended"
+rm "$OPENVPN/ccd/${id}"
+
+telnet localhost 7505 <<EOF
+kill $id
+exit
+
+EOF
+
+echo "OK: removed user $id"
+exit 0
+

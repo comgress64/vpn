@@ -1,0 +1,57 @@
+#!/bin/bash
+
+IPPOOL="$OPENVPN/ippool"
+
+id=$1
+
+function exx {
+        echo "ERROR: $1"
+        exit 1
+}
+
+
+
+if [ "$id" = "" ]; then
+	exx "no id given"
+fi
+
+if [ ! -e "$IPPOOL" ]; then
+	exx "can't read openvpn ip pool file"
+fi
+
+IFS=. read ip1 ip2 ip3 ip4 < $IPPOOL
+
+if [ "$ip4" = "" ]; then
+	exx "ip pool file is invalid"
+fi
+
+ipnew=""
+gw=""
+
+if [ "$ip4" = "0" ]; then
+	ipnew="$ip1.$ip2.$ip3.1"
+	gw="$ip1.$ip2.$ip3.2"
+else
+	iphex=`printf '%02X' $ip1 $ip2 $ip3 $ip4`
+	iphexnew=`printf "%08X" $((0x$iphex + 4))` #adding 4 for new ip
+	gwhex=`printf "%08X" $((0x$iphexnew + 1))`
+	ipnew="$((0x${iphexnew:0:2})).$((0x${iphexnew:2:2})).$((0x${iphexnew:4:2})).$((0x${iphexnew:6:2}))"
+	gw="$((0x${gwhex:0:2})).$((0x${gwhex:2:2})).$((0x${gwhex:4:2})).$((0x${gwhex:6:2}))"
+fi
+
+if [[ "$ipnew" = "" || ($gw = "") ]]; then
+	exx "something went wrong while calculating new ip/gw: $ipnew / $gw"
+fi
+
+
+easyrsa build-client-full "$id" nopass || exx "easyrsa error"
+echo "config generated for $id"
+
+echo "ifconfig-push $ipnew $gw" > "$OPENVPN/ccd/$id" || exx "error writing to ccd/$id"
+echo "ccd generated for $id"
+
+echo "$ipnew" > "$IPPOOL" || exx "error writing to $IPPOOL"
+echo "ip pool updated: $ipnew"
+
+exit 0
+

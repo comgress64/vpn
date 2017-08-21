@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function exx {
+	echo "ERROR: $1"
+	exit 1
+}
+
+function exitok {
+	echo "OK: $1"
+	exit 0
+}
+

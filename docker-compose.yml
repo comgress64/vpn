@@ -1,0 +1,47 @@
+version: '2'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    restart: always
+
+  ovpn-dev:
+    cap_add:
+      - NET_ADMIN
+    image: localhost/ovpnweb6
+    container_name: ovpn-dev
+    environment:
+      - VIRTUAL_HOST=<vhost_of_vpn_api>
+      - VIRTUAL_PORT=80
+    expose:
+      - "80"
+      - "22"
+    ports:
+      - "1192:1194/udp"
+    privileged: true
+    volumes:
+      - /etc/admin/ovpn/data-develop6:/etc/openvpn
+      - /etc/admin/ovpn/bin:/usr/local/bin
+      - /var/www/vpn-api/develop:/var/www
+    restart: always
+
+  vpnfr:
+    image: richarvey/nginx-php-fpm
+    container_name: vpnfr
+    environment:
+      - VIRTUAL_HOST=<vhost_of_vpn_frontend>
+    expose:
+      - "80"
+    volumes:
+      - /var/www/frontend.mycompany.com:/var/www
+      - /etc/admin/ovpn/nginxfr.conf:/etc/nginx/sites-enabled/default.conf
+    restart: always
+    extra_hosts:
+      - "gateway:172.17.0.1"
+    links:
+      - ovpn-dev:<vhost_of_vpn_api>
+
