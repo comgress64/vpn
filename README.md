@@ -12,7 +12,7 @@ Web interface for OpenVpn with ipv6
 
 ## Architecture description
 
-Project includes two sub projects - API and Frontend
+Project includes three sub projects - API, Frontend and Backend
 
 ### Roles of authorized users
 
