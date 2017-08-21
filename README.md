@@ -36,9 +36,10 @@ Project includes three sub projects - API, Frontend and Backend
 
 
 
-## Screenshot
-![](http://i.imgur.com/at4X9ed.png)
+## Screenshots
 
+![](http://i.imgur.com/at4X9ed.png)
+![](http://i.imgur.com/iGDverq.gifv)
 
 
 
