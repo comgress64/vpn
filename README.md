@@ -48,3 +48,8 @@ http://vpn.comgress64.com/
 
 login/pass
 vpn@vpn.com/vpn
+
+
+## Support
+
+Feel free to contact us at comgress64@gmail.com if any questions
