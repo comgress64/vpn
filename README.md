@@ -1,10 +1,13 @@
-!!! WARNING !!! 
-Project is not fully uploaded to github yet
+!!! WARNING !!!
+
+Should be only used along with
+
+[Comgress64 VPN project](https://github.com/comgress64/vpn) and [Comgress64 VPN Frontend](https://github.com/comgress64/vpn_frontend
+)
 
 
 # OpenVPN frontend (ipv6)
 Web interface for OpenVpn with ipv6
-
 
 
 
@@ -48,7 +51,7 @@ Project includes three sub projects - API, Frontend and Backend
 
 
 
-## Try it out
+## DEMO
 http://vpn.comgress64.com/
 
 login/pass
@@ -58,3 +61,5 @@ vpn@vpn.com/vpn
 ## Support
 
 Feel free to contact us at comgress64@gmail.com if any questions
+
+
