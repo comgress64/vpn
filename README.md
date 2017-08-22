@@ -1,3 +1,7 @@
+!!! WARNING !!! 
+Project is not fully uploaded to github yet
+
+
 # OpenVPN frontend (ipv6)
 Web interface for OpenVpn with ipv6
 
